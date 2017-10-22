@@ -1,0 +1,115 @@
+<template>
+  <view class="container">
+    <view class="detail-bg" style="background: url({{cover}})" />
+    <view class="inner">
+      <view class="cover">
+        <image src="{{cover}}" />
+      </view>
+
+      <text class="title detail-title">{{title}} <text class="ins">({{year}})</text></text>
+      <text class="ins detail-title">又名：{{aka}}</text>
+      <view class="mt30">豆瓣评分：{{rating.average}} ({{ratings_count}}人评价)</view>
+      <view>导演：{{directors}}</view>
+      <view>主演：{{casts}}</view>
+      <view>类型：{{genres}}</view>
+      <view>制片国家/地区：{{countries}}</view>
+      <view class="block-title">剧情简介· · · · · ·</view>
+      <view>{{summary}}</view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { requestRemote } from '../util/interface'
+import api from '../config/api'
+
+export default class Detail extends wepy.page {
+  config = {
+    navigationBarTitleText: this.title
+  }
+
+  data = {
+    cover: '',
+    title: '',
+    aka: '',
+    directors: '',
+    casts: '',
+    genres: '',
+    countries: '',
+    year: '',
+    rating: '',
+    ratings_count: '',
+    summary: ''
+  }
+
+  async onLoad(params) {
+    let playList = api.movie.detail
+    let data = await requestRemote(playList.url + params.subject, playList.type)
+    let directorsMap = []
+    let castsMap = []
+
+    data.data.directors.map(item => directorsMap.push(item.name))
+    data.data.casts.map(item => castsMap.push(item.name))
+
+    console.log(data)
+    this.cover = data.data.images.large
+    this.title = data.data.title
+    this.aka = data.data.aka
+    this.directors = directorsMap.join('，')
+    this.casts = castsMap.join('，')
+    this.genres = data.data.genres
+    this.countries = data.data.countries
+    this.year = data.data.year
+    this.rating = data.data.rating
+    this.ratings_count = data.data.ratings_count
+    this.summary = data.data.summary
+    this.$apply()
+  }
+}
+</script>
+
+<style lang="less">
+.detail-bg {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: -1;
+  filter: blur(50px);
+  background-repeat: repeat-y;
+}
+.inner {
+  width: 95%;
+}
+.cover {
+  width: 100%;
+  text-align: center;
+  // height: 500rpx;
+  margin-top: 50rpx;
+}
+.cover image {
+  height: 828rpx;
+  width: 600rpx;
+}
+.detail-title {
+  display: block;
+  text-align: center;
+}
+.title {
+  font-size: 60rpx;
+  font-weight: bold;
+}
+.ins {
+  color: #666;
+}
+.block-title {
+  font-size: 48rpx;
+  color: #007722;
+  width: 100%;
+  margin: 20rpx 0;
+}
+
+.mt30 {
+  margin-top: 30rpx;
+}
+</style>

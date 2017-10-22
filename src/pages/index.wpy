@@ -1,0 +1,120 @@
+<template>
+  <view class="container">
+    <swiper indicator-dots="{{swiper.indicatorDots}}" autoplay="{{swiper.autoplay}}" interval="{{swiper.interval}}" duration="{{swiper.duration}}">
+      <repeat for="{{swiper.subjects}}" item="item">
+        <navigator url="/pages/detail?subject={{item.id}}">
+          <swiper-item>
+            <image src="{{item.images.large}}" class="slide-image" />
+          </swiper-item>
+        </navigator>
+      </repeat>
+    </swiper>
+
+    <view class="play__title">
+      正在热映
+    </view>
+
+    <repeat for="{{list}}" item="item">
+        <view class="play__content">
+          <navigator url="/pages/detail?subject={{item.id}}">
+            <view class="play__content__cover">
+              <image class="" src="{{item.images.small}}"></image>
+            </view>
+            <view class="play__content__panel">
+              <view class="list_title">{{item.title}}</view>
+              <view class="list_item">评分：{{item.rating.average}}</view>
+              <view class="list_item">类型：{{item.genres}}</view>
+              <view class="list_item">年份：{{item.year}}</view>
+              <view class="list_item">主演：{{item.directors}}
+              </view>
+            </view>
+          </navigator>
+        </view>
+    </repeat>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { requestRemote } from '../util/interface'
+import api from '../config/api'
+
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: '豆瓣电影'
+  }
+
+  data = {
+    swiper: {
+      indicatorDots: true,
+      autoplay: true,
+      interval: 5000,
+      duration: 1000,
+      subjects: []
+    },
+    list: []
+  }
+
+  async onLoad() {
+    let playList = api.movie.playList
+    let data = await requestRemote(playList.url, playList.type)
+    this.swiper.subjects = data.data.subjects.slice(0, 4)
+    this.list = data.data.subjects.map(item => {
+      let directors = item.directors
+      let directorMap = []
+      directors.map(director => {
+        directorMap.push(director.name)
+      })
+      item.directors = directorMap.join('，')
+      return item
+    })
+    this.$apply()
+  }
+}
+</script>
+
+<style lang="less">
+swiper {
+  width: 100%;
+  height: 828rpx;
+  text-align: center;
+}
+
+.slide-image {
+  height: 100%;
+  width: 600rpx;
+}
+
+.play__title {
+  width: 95%;
+  font-size: 50rpx;
+  margin-top: 40rpx;
+}
+
+.play__content {
+  width: 95%;
+  margin-top:30rpx;
+}
+
+.play__content__cover {
+  width: 33%;
+  float: left;
+}
+
+.play__content__cover image {
+  width: 200rpx;
+  height: 276rpx;
+}
+.play__content__panel {
+  float: left;
+  width: 67%;
+}
+.list_title {
+  color: #37a;
+  margin-top: 10rpx;
+  margin-bottom: 20rpx;
+}
+.list_item {
+  font-size: 30rpx;
+}
+</style>
